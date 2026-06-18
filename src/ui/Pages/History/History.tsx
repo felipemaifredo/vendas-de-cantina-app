@@ -35,6 +35,8 @@ const History = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const itemsPerPage = 10
   
   // Filter states
   const [filterType, setFilterType] = useState<FilterType>("today")
@@ -134,6 +136,7 @@ const History = () => {
     })
 
     setFilteredOrders(filtered)
+    setCurrentPage(1)
   }
 
   function handleFilterClick(type: FilterType) {
@@ -148,6 +151,11 @@ const History = () => {
       setEndDate(todayStr)
     }
   }
+
+  // Paginated orders
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage)
 
   // Calculate stats for the filtered period
   const totalPeriodAmount = filteredOrders.reduce((sum, o) => sum + o.total, 0)
@@ -253,7 +261,7 @@ const History = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order) => {
+              {paginatedOrders.map((order) => {
                 const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0)
                 return (
                   <tr key={order.id}>
@@ -282,6 +290,29 @@ const History = () => {
           </table>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {filteredOrders.length > itemsPerPage && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.paginationBtn}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Anterior
+          </button>
+          <span className={styles.paginationInfo}>
+            Página {currentPage} de {totalPages || 1}
+          </span>
+          <button
+            className={styles.paginationBtn}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Próxima
+          </button>
+        </div>
+      )}
 
       {/* Order Detail Modal */}
       {selectedOrder && (
