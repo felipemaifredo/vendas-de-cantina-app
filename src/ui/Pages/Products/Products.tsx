@@ -1,6 +1,7 @@
 //Libs
 import React, { useState, useEffect } from "react"
 import { Search, Plus, Edit2, ToggleLeft, ToggleRight, X } from "lucide-react"
+import { toast } from "react-toastify"
 
 //Imports
 import { getProducts, saveProduct } from "../../../lib/Utils/dataService"
@@ -77,7 +78,7 @@ const Products = () => {
 
     const priceNum = parseFloat(formPrice.replace(",", "."))
     if (isNaN(priceNum) || priceNum < 0) {
-      alert("Por favor, insira um preço válido.")
+      toast.warning("Por favor, insira um preço válido.")
       return
     }
 
@@ -94,9 +95,10 @@ const Products = () => {
       await saveProduct(newProduct)
       setIsModalOpen(false)
       loadData()
+      toast.success(editingProduct ? "Produto atualizado com sucesso!" : "Produto cadastrado com sucesso!")
     } catch (err) {
       console.error("Erro ao salvar produto: ", err)
-      alert("Ocorreu um erro ao salvar o produto.")
+      toast.error("Ocorreu um erro ao salvar o produto.")
     }
   }
 
@@ -248,9 +250,11 @@ const Products = () => {
                 <label className={styles.label} htmlFor="prod-price">Preço (R$)</label>
                 <input
                   id="prod-price"
-                  type="text"
+                  type="number"
+                  step="any"
+                  inputMode="decimal"
                   className={styles.input}
-                  placeholder="0,00"
+                  placeholder="0.00"
                   value={formPrice}
                   onChange={(e) => setFormPrice(e.target.value)}
                   required

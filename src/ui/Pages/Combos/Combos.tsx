@@ -1,6 +1,7 @@
 //Libs
 import React, { useState, useEffect } from "react"
 import { Plus, Edit2, Trash2, X, ToggleLeft, ToggleRight } from "lucide-react"
+import { toast } from "react-toastify"
 
 //Imports
 import { getCombos, saveCombo, deleteCombo, getProducts } from "../../../lib/Utils/dataService"
@@ -71,7 +72,7 @@ const Combos = () => {
     e.preventDefault()
     if (!formName.trim()) return
     if (formItems.length === 0) {
-      alert("Por favor, selecione pelo menos um produto para o combo.")
+      toast.warning("Por favor, selecione pelo menos um produto para o combo.")
       return
     }
 
@@ -87,9 +88,10 @@ const Combos = () => {
       await saveCombo(newCombo)
       setIsModalOpen(false)
       loadData()
+      toast.success(editingCombo ? "Combo atualizado com sucesso!" : "Combo criado com sucesso!")
     } catch (err) {
       console.error("Erro ao salvar combo: ", err)
-      alert("Erro ao salvar combo.")
+      toast.error("Erro ao salvar combo.")
     }
   }
 

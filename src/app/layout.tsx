@@ -1,8 +1,10 @@
 //Libs
 import type { Metadata } from "next"
 import { Roboto } from "next/font/google"
+import { ToastContainer } from "react-toastify"
 
 //Imports
+import "react-toastify/dist/ReactToastify.css"
 import "./globals.css"
 
 //Types
@@ -28,6 +30,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     <html lang="pt-BR" className={roboto.className}>
       <body>
         {children}
+        <ToastContainer position="bottom-center" autoClose={3000} />
       </body>
     </html>
   )

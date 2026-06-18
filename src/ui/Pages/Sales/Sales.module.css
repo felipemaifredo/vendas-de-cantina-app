@@ -624,3 +624,44 @@
   text-align: center;
 }
 
+.paymentMethodGroup {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 16px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.paymentMethodButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.paymentMethodBtn {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  cursor: pointer;
+  text-align: center;
+}
+
+.paymentMethodBtn:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.paymentMethodBtnActive {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white !important;
+  font-weight: 700;
+}
+

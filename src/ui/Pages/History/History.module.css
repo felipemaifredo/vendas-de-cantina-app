@@ -341,3 +341,234 @@
   color: var(--color-text-secondary);
 }
 
+.cancelledRow {
+  opacity: 0.65;
+  background-color: var(--color-bg);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusCompleted {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.statusCancelled {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.editRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.editItemQtyControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qtyBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.qtyBtn:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.qtyValue {
+  font-size: 14px;
+  font-weight: 700;
+  width: 20px;
+  text-align: center;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.addProductGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.selectLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.selectInput {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 14px;
+  background-color: var(--color-surface);
+  outline: none;
+  width: 100%;
+}
+
+.selectInput:focus {
+  border-color: var(--color-primary);
+}
+
+.editPaymentGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.editPaymentButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.paymentBtn {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.paymentBtn:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.paymentBtnActive {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white !important;
+  font-weight: 700;
+}
+
+.editBtnAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editBtnAction:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.cancelBtnAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelBtnAction:hover {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.reactivateBtnAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-success-light);
+  border: 1px solid var(--color-success);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.reactivateBtnAction:hover {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.cancelEditBtn {
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  padding: 10px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cancelEditBtn:hover {
+  background-color: var(--color-bg);
+}
+
+.saveEditBtn {
+  background-color: var(--color-success);
+  color: white;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.saveEditBtn:hover {
+  background-color: var(--color-success-hover);
+}
+

@@ -1,6 +1,7 @@
 //Libs
 import React, { useState, useEffect } from "react"
 import { ShoppingCart, Trash2, Plus, Minus, AlertTriangle, Play, X, Check } from "lucide-react"
+import { toast } from "react-toastify"
 
 //Imports
 import { getProducts, getCombos } from "../../../lib/Utils/dataService"
@@ -29,16 +30,24 @@ const Sales = () => {
   // Checkout Modal State
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false)
   const [amountPaid, setAmountPaid] = useState<string>("")
+  const [paymentMethod, setPaymentMethod] = useState<"money" | "pix" | undefined>(undefined)
 
   useEffect(() => {
     if (!isCheckoutOpen) {
       setAmountPaid("")
+      setPaymentMethod(undefined)
     }
   }, [isCheckoutOpen])
 
+  useEffect(() => {
+    if (amountPaid && amountPaid.trim() !== "") {
+      setPaymentMethod("money")
+    }
+  }, [amountPaid])
+
   // Open Cash Register State (Quick actions from sales page)
   const [isCashOpenModalOpen, setIsCashOpenModalOpen] = useState<boolean>(false)
-  const [initialCashValue, setInitialCashValue] = useState<string>("100,00")
+  const [initialCashValue, setInitialCashValue] = useState<string>("100.00")
 
   // Cart & Cash Context Hooks
   const { items, cartTotal, addToCart, addComboToCart, removeItem, decrementItem, clearCart, checkout } = useCart()
@@ -88,27 +97,28 @@ const Sales = () => {
     e.preventDefault()
     const val = parseFloat(initialCashValue.replace(",", "."))
     if (isNaN(val) || val < 0) {
-      alert("Por favor, digite um valor inicial válido.")
+      toast.warning("Por favor, digite um valor inicial válido.")
       return
     }
     try {
       await openSession(val)
       setIsCashOpenModalOpen(false)
+      toast.success("Caixa aberto com sucesso!")
     } catch (err) {
       console.error(err)
-      alert("Erro ao abrir o caixa.")
+      toast.error("Erro ao abrir o caixa.")
     }
   }
 
   async function handleConfirmCheckout() {
     try {
-      await checkout()
+      await checkout(paymentMethod)
       setIsCheckoutOpen(false)
       setMobileCartExpanded(false)
-      alert("Venda registrada com sucesso!")
+      toast.success("Venda registrada com sucesso!")
     } catch (err) {
       console.error(err)
-      alert("Erro ao registrar a venda.")
+      toast.error("Erro ao registrar a venda.")
     }
   }
 
@@ -354,15 +364,43 @@ const Sales = () => {
                 </strong>
               </div>
 
+              {/* FORMA DE PAGAMENTO */}
+              <div className={styles.paymentMethodGroup}>
+                <label className={styles.changeLabel}>Forma de Pagamento (Opcional)</label>
+                <div className={styles.paymentMethodButtons}>
+                  <button
+                    type="button"
+                    className={`${styles.paymentMethodBtn} ${paymentMethod === "money" ? styles.paymentMethodBtnActive : ""}`}
+                    onClick={() => setPaymentMethod(paymentMethod === "money" ? undefined : "money")}
+                  >
+                    Dinheiro
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.paymentMethodBtn} ${paymentMethod === "pix" ? styles.paymentMethodBtnActive : ""}`}
+                    onClick={() => {
+                      setPaymentMethod(paymentMethod === "pix" ? undefined : "pix")
+                      if (paymentMethod !== "pix") {
+                        setAmountPaid("")
+                      }
+                    }}
+                  >
+                    Pix
+                  </button>
+                </div>
+              </div>
+
               {/* ASSISTÊNCIA DE TROCO */}
               <div className={styles.changeAssistance}>
                 <div className={styles.formGroup}>
                   <label htmlFor="amount-paid" className={styles.changeLabel}>Assistência de Troco (Valor Pago)</label>
                   <input
                     id="amount-paid"
-                    type="text"
+                    type="number"
+                    step="any"
+                    inputMode="decimal"
                     className={styles.changeInput}
-                    placeholder="R$ 0,00"
+                    placeholder="0.00"
                     value={amountPaid}
                     onChange={(e) => setAmountPaid(e.target.value)}
                   />
@@ -372,7 +410,10 @@ const Sales = () => {
                   <button
                     type="button"
                     className={styles.suggestionBtn}
-                    onClick={() => setAmountPaid(cartTotal.toString())}
+                    onClick={() => {
+                      setAmountPaid(cartTotal.toString())
+                      setPaymentMethod("money")
+                    }}
                   >
                     Dinheiro Exato
                   </button>
@@ -383,7 +424,10 @@ const Sales = () => {
                         key={val}
                         type="button"
                         className={styles.suggestionBtn}
-                        onClick={() => setAmountPaid(val.toString())}
+                        onClick={() => {
+                          setAmountPaid(val.toString())
+                          setPaymentMethod("money")
+                        }}
                       >
                         {formatCurrency(val)}
                       </button>
@@ -445,7 +489,9 @@ const Sales = () => {
                   <label htmlFor="initial-cash" className={styles.label}>Valor Inicial (R$)</label>
                   <input
                     id="initial-cash"
-                    type="text"
+                    type="number"
+                    step="any"
+                    inputMode="decimal"
                     className={styles.input}
                     value={initialCashValue}
                     onChange={(e) => setInitialCashValue(e.target.value)}

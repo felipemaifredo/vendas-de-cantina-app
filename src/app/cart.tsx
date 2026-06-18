@@ -16,7 +16,7 @@ type CartContextType = {
   removeItem: (productId: string) => void
   decrementItem: (productId: string) => void
   clearCart: () => void
-  checkout: () => Promise<void>
+  checkout: (paymentMethod?: "pix" | "money") => Promise<void>
 }
 
 type CartProviderProps = {
@@ -98,7 +98,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     setItems([])
   }
 
-  async function checkout(): Promise<void> {
+  async function checkout(paymentMethod?: "pix" | "money"): Promise<void> {
     if (items.length === 0) throw new Error("Carrinho está vazio")
     
     const newOrder: Order = {
@@ -106,7 +106,9 @@ export const CartProvider = ({ children }: CartProviderProps) => {
       createdAt: new Date().toISOString(),
       total: cartTotal,
       items: [...items],
-      cashSessionId: currentSession?.id || undefined
+      cashSessionId: currentSession?.id || undefined,
+      paymentMethod,
+      status: "completed"
     }
 
     try {

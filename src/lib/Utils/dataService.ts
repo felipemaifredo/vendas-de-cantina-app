@@ -141,7 +141,9 @@ export async function syncPendingOrders(): Promise<void> {
         createdAt: order.createdAt,
         total: order.total,
         items: order.items,
-        cashSessionId: order.cashSessionId || ""
+        cashSessionId: order.cashSessionId || "",
+        paymentMethod: order.paymentMethod || "",
+        status: order.status || "completed"
       })
     } catch (e) {
       console.error(`Erro ao sincronizar pedido ${order.id}: `, e)
@@ -309,7 +311,9 @@ export async function getOrders(): Promise<Order[]> {
           createdAt: data.createdAt,
           total: data.total,
           items: data.items || [],
-          cashSessionId: data.cashSessionId
+          cashSessionId: data.cashSessionId,
+          paymentMethod: data.paymentMethod || undefined,
+          status: data.status || "completed"
         })
       })
       setLocal("orders", list)
@@ -335,7 +339,12 @@ export async function getOrders(): Promise<Order[]> {
 
 export async function saveOrder(order: Order): Promise<void> {
   const list = getLocal<Order>("orders")
-  list.push(order)
+  const idx = list.findIndex(o => o.id === order.id)
+  if (idx > -1) {
+    list[idx] = order
+  } else {
+    list.push(order)
+  }
   setLocal("orders", list)
 
   if (isFirebaseConfigured() && db && navigator.onLine) {
@@ -345,7 +354,9 @@ export async function saveOrder(order: Order): Promise<void> {
         createdAt: order.createdAt,
         total: order.total,
         items: order.items,
-        cashSessionId: order.cashSessionId || ""
+        cashSessionId: order.cashSessionId || "",
+        paymentMethod: order.paymentMethod || "",
+        status: order.status || "completed"
       })
       return
     } catch (e) {

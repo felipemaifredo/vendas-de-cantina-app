@@ -3,12 +3,13 @@ import React, { useState, useEffect } from "react"
 import { DollarSign, ShoppingBag, TrendingUp, BarChart3, Star, Layers, Activity } from "lucide-react"
 
 //Imports
-import { getOrders, getProducts } from "../../../lib/Utils/dataService"
+import { getOrders, getProducts, getCashSessions } from "../../../lib/Utils/dataService"
 import styles from "./Dashboard.module.css"
 
 //Types
-import type { Order, Product } from "../../../lib/Utils/types"
+import type { Order, Product, CashSession } from "../../../lib/Utils/types"
 
+//Types
 type ProductRank = {
   name: string
   count: number
@@ -45,10 +46,23 @@ function formatCurrency(value: number): string {
   })
 }
 
+function formatDateTime(isoString: string): string {
+  const date = new Date(isoString)
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  })
+}
+
 //Main
 const Dashboard = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [sessions, setSessions] = useState<CashSession[]>([])
+  const [selectedSessionId, setSelectedSessionId] = useState<string>("all")
   const [loading, setLoading] = useState<boolean>(true)
 
   // Computed dashboard metrics
@@ -56,7 +70,9 @@ const Dashboard = () => {
     todayTotal: 0,
     monthTotal: 0,
     totalOrders: 0,
-    averageTicket: 0
+    averageTicket: 0,
+    sessionTotal: 0,
+    sessionInitialCash: 0
   })
   const [topProducts, setTopProducts] = useState<ProductRank[]>([])
   const [salesByCat, setSalesByCat] = useState<CategoryRank[]>([])
@@ -68,15 +84,20 @@ const Dashboard = () => {
     loadData()
   }, [])
 
+  useEffect(() => {
+    computeMetrics(orders, products, selectedSessionId, sessions)
+  }, [selectedSessionId, orders, products, sessions])
+
   // Handlers (using function keyword as they do not return JSX)
   async function loadData() {
     setLoading(true)
     try {
       const ordersData = await getOrders()
       const productsData = await getProducts()
+      const sessionsData = await getCashSessions()
       setOrders(ordersData)
       setProducts(productsData)
-      computeMetrics(ordersData, productsData)
+      setSessions(sessionsData)
     } catch (e) {
       console.error("Erro ao carregar dados do Dashboard: ", e)
     } finally {
@@ -84,8 +105,21 @@ const Dashboard = () => {
     }
   }
 
-  function computeMetrics(allOrders: Order[], allProducts: Product[]) {
-    if (allOrders.length === 0) return
+  function computeMetrics(allOrders: Order[], allProducts: Product[], sessionId: string, allSessions: CashSession[]) {
+    // 1. Exclude cancelled orders from dashboard metrics
+    const activeOrders = allOrders.filter(o => o.status !== "cancelled")
+
+    // 2. Filter by session if requested
+    let targetOrders = activeOrders
+    let sessionInitialCash = 0
+
+    if (sessionId !== "all") {
+      targetOrders = activeOrders.filter(o => o.cashSessionId === sessionId)
+      const currentSess = allSessions.find(s => s.id === sessionId)
+      if (currentSess) {
+        sessionInitialCash = currentSess.initialValue
+      }
+    }
 
     const now = new Date()
     const todayStr = now.toISOString().split("T")[0]
@@ -94,10 +128,9 @@ const Dashboard = () => {
 
     let todayTotal = 0
     let monthTotal = 0
-    const totalOrders = allOrders.length
 
-    // 1. Calculate General Stats
-    allOrders.forEach((o) => {
+    // Calculate Today and Month Totals globally from all active orders
+    activeOrders.forEach((o) => {
       const orderDate = new Date(o.createdAt)
       const orderDateStr = o.createdAt.split("T")[0]
 
@@ -109,19 +142,22 @@ const Dashboard = () => {
       }
     })
 
-    const totalRevenue = allOrders.reduce((sum, o) => sum + o.total, 0)
+    const totalOrders = targetOrders.length
+    const totalRevenue = targetOrders.reduce((sum, o) => sum + o.total, 0)
     const averageTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
     setStats({
       todayTotal,
       monthTotal,
       totalOrders,
-      averageTicket
+      averageTicket,
+      sessionTotal: totalRevenue,
+      sessionInitialCash
     })
 
-    // 2. Ranking: Top Products Sold
+    // Ranking: Top Products Sold based on targetOrders
     const productCounts: Record<string, number> = {}
-    allOrders.forEach((o) => {
+    targetOrders.forEach((o) => {
       o.items.forEach((item) => {
         productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity
       })
@@ -134,11 +170,10 @@ const Dashboard = () => {
 
     setTopProducts(sortedProducts)
 
-    // 3. Vendas por Categoria
+    // Vendas por Categoria based on targetOrders
     const categoryTotals: Record<string, number> = {}
-    allOrders.forEach((o) => {
+    targetOrders.forEach((o) => {
       o.items.forEach((item) => {
-        // Find product category
         const prod = allProducts.find(p => p.id === item.productId)
         const cat = prod ? prod.category : "Outros"
         categoryTotals[cat] = (categoryTotals[cat] || 0) + item.total
@@ -156,11 +191,10 @@ const Dashboard = () => {
 
     setSalesByCat(sortedCategories)
 
-    // 4. Combinações Mais Frequentes (Frequent combinations - item pairs in single order)
+    // Combinações Mais Frequentes based on targetOrders
     const combinationCounts: Record<string, number> = {}
-    allOrders.forEach((o) => {
+    targetOrders.forEach((o) => {
       if (o.items.length > 1) {
-        // Extract distinct names
         const names = Array.from(new Set(o.items.map(i => i.name))).sort()
         for (let i = 0; i < names.length; i++) {
           for (let j = i + 1; j < names.length; j++) {
@@ -178,17 +212,25 @@ const Dashboard = () => {
 
     setTopCombos(sortedCombos)
 
-    // 5. Daily sales chart (last 7 days)
+    // Determine reference date for daily charts (dynamic to show selected session's days)
+    let referenceDate = now
+    if (sessionId !== "all") {
+      const sess = allSessions.find(s => s.id === sessionId)
+      if (sess) {
+        referenceDate = new Date(sess.openedAt)
+      }
+    }
+
     const last7Days: DayData[] = []
     for (let i = 6; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(now.getDate() - i)
+      const d = new Date(referenceDate)
+      d.setDate(referenceDate.getDate() - i)
       const dateStr = d.toISOString().split("T")[0]
       const label = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
       last7Days.push({ dateStr, label, total: 0, count: 0 })
     }
 
-    allOrders.forEach((o) => {
+    targetOrders.forEach((o) => {
       const orderDateStr = o.createdAt.split("T")[0]
       const dayMatch = last7Days.find(d => d.dateStr === orderDateStr)
       if (dayMatch) {
@@ -199,16 +241,26 @@ const Dashboard = () => {
 
     setChartDays(last7Days)
 
-    // 6. Horários de Pico (Group order count by hour: 0-23)
+    // Horários de Pico baseados em targetOrders (intervalo dinâmico baseado em vendas reais)
+    const orderHours = targetOrders.map(o => new Date(o.createdAt).getHours())
+    let minHour = orderHours.length > 0 ? Math.min(...orderHours) : 8
+    let maxHour = orderHours.length > 0 ? Math.max(...orderHours) : 22
+
+    if (minHour < 0) minHour = 0
+    if (maxHour > 23) maxHour = 23
+
+    // Exibe pelo menos de 8h às 22h por padrão se o intervalo for estreito ou vazio
+    if (minHour > 8 || orderHours.length === 0) minHour = 8
+    if (maxHour < 22 || orderHours.length === 0) maxHour = 22
+
     const hourlyCounts: Record<number, number> = {}
-    // Initialize standard peak operation hours (e.g. 12h to 22h)
-    for (let h = 12; h <= 22; h++) {
+    for (let h = minHour; h <= maxHour; h++) {
       hourlyCounts[h] = 0
     }
 
-    allOrders.forEach((o) => {
+    targetOrders.forEach((o) => {
       const hour = new Date(o.createdAt).getHours()
-      if (hour >= 12 && hour <= 22) {
+      if (hour >= minHour && hour <= maxHour) {
         hourlyCounts[hour] = (hourlyCounts[hour] || 0) + 1
       }
     })
@@ -220,7 +272,7 @@ const Dashboard = () => {
     setChartHours(chartHoursList)
   }
 
-  // Helpers to render custom SVG charts
+  // Helpers to render custom SVG charts (using function keyword as per codebase style)
   function renderRevenueChart() {
     if (chartDays.length === 0) return null
 
@@ -232,14 +284,12 @@ const Dashboard = () => {
     const graphWidth = width - padding * 2
     const graphHeight = height - padding * 2
 
-    // Map data points
     const points = chartDays.map((d, index) => {
       const x = padding + (index / (chartDays.length - 1)) * graphWidth
       const y = padding + graphHeight - (d.total / maxVal) * graphHeight
       return { x, y, label: d.label, val: d.total }
     })
 
-    // Construct SVG path string for line and area fill
     let pathD = ""
     let areaD = ""
 
@@ -264,7 +314,6 @@ const Dashboard = () => {
           </linearGradient>
         </defs>
 
-        {/* Grid Lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
           const y = padding + graphHeight * r
           return (
@@ -279,13 +328,9 @@ const Dashboard = () => {
           )
         })}
 
-        {/* Area Fill */}
         {pathD && <path d={areaD} className={styles.chartArea} />}
-
-        {/* Line */}
         {pathD && <path d={pathD} className={styles.chartLine} />}
 
-        {/* Data Points */}
         {points.map((p, i) => (
           <g key={i}>
             <circle cx={p.x} cy={p.y} r={4} className={styles.chartPoint} />
@@ -317,7 +362,6 @@ const Dashboard = () => {
 
     return (
       <svg className={styles.svgChart} viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
-        {/* Grid Lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
           const y = padding + graphHeight * r
           return (
@@ -332,7 +376,6 @@ const Dashboard = () => {
           )
         })}
 
-        {/* Bars */}
         {chartDays.map((d, index) => {
           const x = padding + index * (barWidth + barSpacing) + barSpacing / 2
           const barHeight = (d.count / maxVal) * graphHeight
@@ -377,7 +420,6 @@ const Dashboard = () => {
 
     return (
       <svg className={styles.svgChart} viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
-        {/* Grid Lines */}
         {[0, 0.5, 1].map((r, i) => {
           const y = padding + graphHeight * r
           return (
@@ -392,13 +434,11 @@ const Dashboard = () => {
           )
         })}
 
-        {/* Hourly Bars */}
         {chartHours.map((d, index) => {
           const x = padding + index * (barWidth + barSpacing) + barSpacing / 2
           const barHeight = (d.count / maxVal) * graphHeight
           const y = padding + graphHeight - barHeight
 
-          // Highlight color for peak sales hour
           const isPeak = d.count === maxVal && maxVal > 0
 
           return (
@@ -429,6 +469,30 @@ const Dashboard = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Dashboard de Indicadores</h1>
+        
+        {/* CASH SESSION FILTER DROPDOWN */}
+        {!loading && (orders.length > 0 || sessions.length > 0) && (
+          <div className={styles.filterBar}>
+            <label htmlFor="session-filter" className={styles.label}>Filtrar por Caixa:</label>
+            <select
+              id="session-filter"
+              className={styles.selectInput}
+              value={selectedSessionId}
+              onChange={(e) => setSelectedSessionId(e.target.value)}
+            >
+              <option value="all">Todos os Caixas (Geral)</option>
+              {sessions.map((sess) => {
+                const isOpen = sess.status === "open"
+                const dateFormatted = formatDateTime(sess.openedAt)
+                return (
+                  <option key={sess.id} value={sess.id}>
+                    {isOpen ? `Caixa Atual (Aberto - ${dateFormatted})` : `Caixa Fechado (${dateFormatted})`}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -448,20 +512,26 @@ const Dashboard = () => {
                 <DollarSign size={24} />
               </div>
               <div className={styles.statInfo}>
-                <span className={styles.statLabel}>Vendido Hoje</span>
+                <span className={styles.statLabel}>
+                  {selectedSessionId === "all" ? "Vendido Hoje" : "Total Vendido"}
+                </span>
                 <span className={styles.statVal} style={{ color: "var(--color-success)" }}>
-                  {formatCurrency(stats.todayTotal)}
+                  {selectedSessionId === "all" ? formatCurrency(stats.todayTotal) : formatCurrency(stats.sessionTotal)}
                 </span>
               </div>
             </div>
 
             <div className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: "#eff6ff", color: "#1d4ed8" }}>
-                <TrendingUp size={24} />
+                {selectedSessionId === "all" ? <TrendingUp size={24} /> : <DollarSign size={24} />}
               </div>
               <div className={styles.statInfo}>
-                <span className={styles.statLabel}>Vendido no Mês</span>
-                <span className={styles.statVal}>{formatCurrency(stats.monthTotal)}</span>
+                <span className={styles.statLabel}>
+                  {selectedSessionId === "all" ? "Vendido no Mês" : "Fundo Inicial"}
+                </span>
+                <span className={styles.statVal}>
+                  {selectedSessionId === "all" ? formatCurrency(stats.monthTotal) : formatCurrency(stats.sessionInitialCash)}
+                </span>
               </div>
             </div>
 
@@ -488,19 +558,23 @@ const Dashboard = () => {
 
           {/* CHARTS CONTAINER */}
           <div className={styles.chartsGrid}>
-            <div className={styles.chartCard}>
-              <h2 className={styles.chartTitle}>Faturamento nos Últimos 7 Dias (R$)</h2>
-              <div className={styles.chartWrapper}>
-                {renderRevenueChart()}
-              </div>
-            </div>
+            {selectedSessionId === "all" && (
+              <>
+                <div className={styles.chartCard}>
+                  <h2 className={styles.chartTitle}>Faturamento nos Últimos 7 Dias (R$)</h2>
+                  <div className={styles.chartWrapper}>
+                    {renderRevenueChart()}
+                  </div>
+                </div>
 
-            <div className={styles.chartCard}>
-              <h2 className={styles.chartTitle}>Pedidos nos Últimos 7 Dias (Qtd)</h2>
-              <div className={styles.chartWrapper}>
-                {renderOrdersChart()}
-              </div>
-            </div>
+                <div className={styles.chartCard}>
+                  <h2 className={styles.chartTitle}>Pedidos nos Últimos 7 Dias (Qtd)</h2>
+                  <div className={styles.chartWrapper}>
+                    {renderOrdersChart()}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className={styles.chartCard}>
               <h2 className={styles.chartTitle}>Horários de Pico (Pedidos / Hora)</h2>
@@ -535,6 +609,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
 
           {/* LISTS: TOP PRODUCTS & FREQUENT COMBINATIONS */}
           <div className={styles.listsGrid}>

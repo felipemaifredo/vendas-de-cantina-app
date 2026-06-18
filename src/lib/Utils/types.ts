@@ -35,6 +35,8 @@ export type Order = {
   total: number
   items: OrderItem[]
   cashSessionId?: string // Link to the cash session it was sold in
+  paymentMethod?: "pix" | "money"
+  status?: "completed" | "cancelled"
 }
 
 export type CashSession = {

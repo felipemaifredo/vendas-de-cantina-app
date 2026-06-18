@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   User
 } from "firebase/auth"
+import { toast } from "react-toastify"
 
 //Imports
 import { auth, isFirebaseConfigured } from "../lib/Utils/firebase"
@@ -118,7 +119,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   async function resetPassword(email: string): Promise<void> {
     if (isLocalMode || !auth) {
       if (email === "felipe@email.com") {
-        alert("Modo Local: Senha redefinida para '123456'!")
+        toast.success("Modo Local: Senha redefinida para '123456'!")
       } else {
         throw new Error("E-mail não encontrado no sistema local.")
       }

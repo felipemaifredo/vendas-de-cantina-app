@@ -236,3 +236,32 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.selectInput {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: var(--color-surface);
+  outline: none;
+  cursor: pointer;
+  min-width: 220px;
+  transition: border-color 0.2s;
+}
+
+.selectInput:focus {
+  border-color: var(--color-primary);
+}
