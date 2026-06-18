@@ -223,8 +223,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   background-color: rgba(15, 23, 42, 0.4);
   z-index: 500;
   display: flex;
@@ -243,6 +243,7 @@
   max-width: 500px;
   display: flex;
   flex-direction: column;
+  max-height: 90dvh;
 }
 
 .modalHeader {
@@ -273,7 +274,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 60vh;
+  max-height: 60dvh;
   overflow-y: auto;
 }
 
@@ -294,4 +295,140 @@
 
 .closeBtnAction:hover {
   background-color: var(--color-primary-hover);
+}
+
+.sessionMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-bg);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dashboardSections {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .dashboardSections {
+    grid-template-columns: 1fr 1fr;
+  }
+  .fullWidth {
+    grid-column: span 2;
+  }
+}
+
+.cardSection {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardPhysical {
+  border-left: 5px solid var(--color-success);
+}
+
+.cardDigital {
+  border-left: 5px solid var(--color-primary);
+}
+
+.cardWarning {
+  border-left: 5px solid var(--color-warning);
+  background-color: var(--color-danger-light);
+  border-color: rgba(217, 119, 6, 0.2);
+}
+
+.cardTotal {
+  background-color: var(--color-primary-light);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.cardTitleSection {
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+}
+
+.metricRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  padding: 4px 0;
+}
+
+.metricRowHighlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  border-top: 1px dashed var(--color-border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.allocationButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.btnAllocation {
+  flex: 1;
+  min-width: 140px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+}
+
+.btnAllocationMoney {
+  background-color: var(--color-success-light);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  color: var(--color-success);
+}
+
+.btnAllocationMoney:hover {
+  background-color: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.btnAllocationPix {
+  background-color: var(--color-primary-light);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  color: var(--color-primary);
+}
+
+.btnAllocationPix:hover {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }

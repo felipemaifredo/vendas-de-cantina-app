@@ -27,7 +27,7 @@ const RedirectController = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      minHeight: "100vh",
+      minHeight: "100dvh",
       backgroundColor: "var(--color-bg)",
       color: "var(--color-text-secondary)",
       fontSize: 16

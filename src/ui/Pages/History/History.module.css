@@ -142,8 +142,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   background-color: rgba(15, 23, 42, 0.4);
   z-index: 500;
   display: flex;
@@ -162,6 +162,7 @@
   max-width: 480px;
   display: flex;
   flex-direction: column;
+  max-height: 90dvh;
 }
 
 .modalHeader {
@@ -194,6 +195,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-height: 70dvh;
+  overflow-y: auto;
 }
 
 .metaGrid {

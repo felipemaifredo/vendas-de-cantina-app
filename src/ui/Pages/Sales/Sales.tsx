@@ -134,7 +134,7 @@ const Sales = () => {
   const categories = Array.from(new Set(products.map(p => p.category)))
 
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${items.length > 0 ? styles.hasMobileCart : ""}`}>
       {/* Closed Cash Warning */}
       {!currentSession && (
         <div className={styles.warningBanner}>
@@ -366,12 +366,12 @@ const Sales = () => {
 
               {/* FORMA DE PAGAMENTO */}
               <div className={styles.paymentMethodGroup}>
-                <label className={styles.changeLabel}>Forma de Pagamento (Opcional)</label>
+                <label className={styles.changeLabel}>Forma de Pagamento (Obrigatório)</label>
                 <div className={styles.paymentMethodButtons}>
                   <button
                     type="button"
                     className={`${styles.paymentMethodBtn} ${paymentMethod === "money" ? styles.paymentMethodBtnActive : ""}`}
-                    onClick={() => setPaymentMethod(paymentMethod === "money" ? undefined : "money")}
+                    onClick={() => setPaymentMethod("money")}
                   >
                     Dinheiro
                   </button>
@@ -379,10 +379,8 @@ const Sales = () => {
                     type="button"
                     className={`${styles.paymentMethodBtn} ${paymentMethod === "pix" ? styles.paymentMethodBtnActive : ""}`}
                     onClick={() => {
-                      setPaymentMethod(paymentMethod === "pix" ? undefined : "pix")
-                      if (paymentMethod !== "pix") {
-                        setAmountPaid("")
-                      }
+                      setPaymentMethod("pix")
+                      setAmountPaid("")
                     }}
                   >
                     Pix
@@ -458,7 +456,12 @@ const Sales = () => {
                 <button className={styles.modalEditBtn} onClick={() => setIsCheckoutOpen(false)}>
                   Editar Pedido
                 </button>
-                <button className={styles.modalConfirmBtn} onClick={handleConfirmCheckout}>
+                <button
+                  className={styles.modalConfirmBtn}
+                  onClick={handleConfirmCheckout}
+                  disabled={!paymentMethod}
+                  style={!paymentMethod ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                >
                   Confirmar Venda
                 </button>
               </div>

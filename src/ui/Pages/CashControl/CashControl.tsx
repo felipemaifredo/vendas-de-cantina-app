@@ -1,10 +1,10 @@
 //Libs
 import React, { useState, useEffect } from "react"
-import { Calendar, DollarSign, Calculator, Lock, Unlock, X, Eye } from "lucide-react"
+import { Calendar, DollarSign, Calculator, Lock, Unlock, X, Eye, AlertTriangle } from "lucide-react"
 import { toast } from "react-toastify"
 
 //Imports
-import { getCashSessions, getOrders } from "../../../lib/Utils/dataService"
+import { getCashSessions, getOrders, saveOrder } from "../../../lib/Utils/dataService"
 import { useCash } from "../../../app/cash"
 import styles from "./CashControl.module.css"
 
@@ -108,6 +108,30 @@ const CashControl = () => {
     }
   }
 
+  async function handleAllocateUnspecified(targetMethod: "money" | "pix", sessionId: string) {
+    try {
+      const ordersToUpdate = allOrders.filter(
+        o => o.cashSessionId === sessionId && o.paymentMethod !== "money" && o.paymentMethod !== "pix"
+      )
+
+      if (ordersToUpdate.length === 0) return
+
+      for (const order of ordersToUpdate) {
+        const updatedOrder = {
+          ...order,
+          paymentMethod: targetMethod
+        }
+        await saveOrder(updatedOrder)
+      }
+
+      await loadData()
+      toast.success(`Vendas alocadas em ${targetMethod === "money" ? "Dinheiro" : "Pix"} com sucesso!`)
+    } catch (err) {
+      console.error("Erro ao alocar vendas não informadas: ", err)
+      toast.error("Erro ao alocar vendas.")
+    }
+  }
+
   // Calculate current session stats, EXCLUDING CANCELLED orders
   const activeOrders = currentSession
     ? allOrders.filter(o => o.cashSessionId === currentSession.id && o.status !== "cancelled")
@@ -177,45 +201,96 @@ const CashControl = () => {
 
         {currentSession ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <div className={styles.statsGrid}>
-              <div className={styles.statItem} style={{ gridColumn: "span 2" }}>
-                <span className={styles.statLabel}>Aberto Em</span>
-                <span className={styles.statValue} style={{ fontSize: 15 }}>
-                  {formatDateTime(currentSession.openedAt)}
-                </span>
+            {/* Session Metadata Info */}
+            <div className={styles.sessionMeta}>
+              <span><strong>Aberto em:</strong> {formatDateTime(currentSession.openedAt)}</span>
+              <span><strong>Fundo de Entrada (Troco):</strong> {formatCurrency(currentSession.initialValue)}</span>
+            </div>
+
+            {/* Dashboard grid sections */}
+            <div className={styles.dashboardSections}>
+              
+              {/* 1. Caixa Físico (Dinheiro) */}
+              <div className={`${styles.cardSection} ${styles.cardPhysical}`}>
+                <div className={styles.cardTitleSection}>
+                  <DollarSign size={18} style={{ color: "var(--color-success)" }} />
+                  <span style={{ fontWeight: 700 }}>Dinheiro (Físico)</span>
+                </div>
+                <div className={styles.metricRow}>
+                  <span>Fundo Inicial</span>
+                  <span>{formatCurrency(currentSession.initialValue)}</span>
+                </div>
+                <div className={styles.metricRow}>
+                  <span>Vendas em Dinheiro (+)</span>
+                  <span>{formatCurrency(activeMoneySales)}</span>
+                </div>
+                <div className={styles.metricRowHighlight} style={{ color: "var(--color-success)" }}>
+                  <span>Esperado na Gaveta</span>
+                  <span>{formatCurrency(activeExpectedCash)}</span>
+                </div>
               </div>
-              <div className={styles.statItem} style={{ gridColumn: "span 2" }}>
-                <span className={styles.statLabel}>Fundo Inicial (Dinheiro)</span>
-                <span className={styles.statValue}>{formatCurrency(currentSession.initialValue)}</span>
+
+              {/* 2. Caixa Digital (Pix) */}
+              <div className={`${styles.cardSection} ${styles.cardDigital}`}>
+                <div className={styles.cardTitleSection}>
+                  <Calculator size={18} style={{ color: "var(--color-primary)" }} />
+                  <span style={{ fontWeight: 700 }}>PIX (Banco)</span>
+                </div>
+                <div className={styles.metricRow} style={{ flexGrow: 1, alignItems: "flex-start" }}>
+                  <span>Vendas por Pix (+)</span>
+                  <span style={{ fontWeight: 500 }}>{formatCurrency(activeExpectedPix)}</span>
+                </div>
+                <div className={styles.metricRowHighlight} style={{ color: "var(--color-primary)" }}>
+                  <span>Total Pix Recebido</span>
+                  <span>{formatCurrency(activeExpectedPix)}</span>
+                </div>
               </div>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>Vendas em Dinheiro (+)</span>
-                <span className={styles.statValue} style={{ color: "var(--color-primary)" }}>
-                  {formatCurrency(activeMoneySales)}
-                </span>
-              </div>
-              <div className={styles.statItem} style={{ border: "1px solid var(--color-success)" }}>
-                <span className={styles.statLabel} style={{ color: "var(--color-success)" }}>Esperado em Dinheiro (Físico)</span>
-                <span className={styles.statValue} style={{ color: "var(--color-success)" }}>
-                  {formatCurrency(activeExpectedCash)}
-                </span>
-              </div>
-              <div className={styles.statItem} style={{ gridColumn: "span 2", border: "1px solid var(--color-primary)" }}>
-                <span className={styles.statLabel} style={{ color: "var(--color-primary)" }}>Vendas em Pix (+)</span>
-                <span className={styles.statValue} style={{ color: "var(--color-primary)" }}>{formatCurrency(activeExpectedPix)}</span>
-              </div>
+
+              {/* 3. Reconciliação de Não Informados (Se houver saldo pendente) */}
               {activeUnspecifiedSales > 0 && (
-                <div className={styles.statItem} style={{ gridColumn: "span 2" }}>
-                  <span className={styles.statLabel}>Não Informado (+)</span>
-                  <span className={styles.statValue}>{formatCurrency(activeUnspecifiedSales)}</span>
+                <div className={`${styles.cardSection} ${styles.cardWarning} ${styles.fullWidth}`}>
+                  <div className={styles.cardTitleSection}>
+                    <AlertTriangle size={18} style={{ color: "var(--color-warning)" }} />
+                    <span style={{ color: "var(--color-warning)", fontWeight: 700 }}>Conciliação Necessária</span>
+                  </div>
+                  <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>
+                    Há <strong>{formatCurrency(activeUnspecifiedSales)}</strong> em vendas sem forma de pagamento informada nesta sessão. Escolha para onde destinar esse valor para que o caixa feche corretamente:
+                  </p>
+                  <div className={styles.allocationButtons}>
+                    <button
+                      type="button"
+                      className={`${styles.btnAllocation} ${styles.btnAllocationMoney}`}
+                      onClick={() => handleAllocateUnspecified("money", currentSession.id)}
+                    >
+                      Enviar para Dinheiro (Gaveta)
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.btnAllocation} ${styles.btnAllocationPix}`}
+                      onClick={() => handleAllocateUnspecified("pix", currentSession.id)}
+                    >
+                      Enviar para Pix (Banco)
+                    </button>
+                  </div>
                 </div>
               )}
-              <div className={styles.statItem} style={{ gridColumn: "span 2", backgroundColor: "var(--color-primary-light)" }}>
-                <span className={styles.statLabel}>Total Geral Esperado</span>
-                <span className={styles.statValue} style={{ color: "var(--color-primary)" }}>
-                  {formatCurrency(activeExpectedCash + activeExpectedPix + activeUnspecifiedSales)}
-                </span>
+
+              {/* 4. Resumo Financeiro Total */}
+              <div className={`${styles.cardSection} ${styles.cardTotal} ${styles.fullWidth}`}>
+                <div className={styles.cardTitleSection}>
+                  <Unlock size={18} style={{ color: "var(--color-primary)" }} />
+                  <span style={{ fontWeight: 700 }}>Resumo do Turno</span>
+                </div>
+                <div className={styles.metricRow}>
+                  <span>Total Geral Vendido (Dinheiro + Pix + Não Informado)</span>
+                  <span style={{ fontWeight: 500 }}>{formatCurrency(activeTotalSold)}</span>
+                </div>
+                <div className={styles.metricRowHighlight} style={{ color: "var(--color-primary)" }}>
+                  <span>Total Geral Esperado (Com Fundo Inicial)</span>
+                  <span>{formatCurrency(activeExpectedCash + activeExpectedPix + activeUnspecifiedSales)}</span>
+                </div>
               </div>
+
             </div>
 
             <form className={styles.closeForm} onSubmit={handleClose}>
@@ -418,6 +493,35 @@ const CashControl = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Reconciliação Retroativa no Relatório */}
+                {sessUnspecifiedSales > 0 && (
+                  <div className={`${styles.cardSection} ${styles.cardWarning}`} style={{ marginTop: 8 }}>
+                    <div className={styles.cardTitleSection}>
+                      <AlertTriangle size={18} style={{ color: "var(--color-warning)" }} />
+                      <span style={{ color: "var(--color-warning)", fontWeight: 700 }}>Conciliação Pendente</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>
+                      Este caixa possui <strong>{formatCurrency(sessUnspecifiedSales)}</strong> em vendas não alocadas. Selecione o destino para recalcular o relatório:
+                    </p>
+                    <div className={styles.allocationButtons}>
+                      <button
+                        type="button"
+                        className={`${styles.btnAllocation} ${styles.btnAllocationMoney}`}
+                        onClick={() => handleAllocateUnspecified("money", selectedSession.id)}
+                      >
+                        Enviar para Dinheiro
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.btnAllocation} ${styles.btnAllocationPix}`}
+                        onClick={() => handleAllocateUnspecified("pix", selectedSession.id)}
+                      >
+                        Enviar para Pix
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {selectedSession.finalValue !== null && (
                   <div

@@ -30,7 +30,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     <html lang="pt-BR" className={roboto.className}>
       <body>
         {children}
-        <ToastContainer position="bottom-center" autoClose={3000} />
+        <ToastContainer position="top-center" autoClose={3000} />
       </body>
     </html>
   )
