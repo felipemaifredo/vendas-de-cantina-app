@@ -1,0 +1,297 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.activeCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.activeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.statusBadge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.statusOpen {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.statusClosed {
+  background-color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.statItem {
+  background-color: var(--color-bg);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.statValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.closeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
+}
+
+.formTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.formInline {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 15px;
+  outline: none;
+  background-color: var(--color-surface);
+  transition: border-color 0.2s;
+  height: 42px;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.submitBtn {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  height: 42px;
+  transition: background-color 0.2s;
+}
+
+.submitBtn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.closeBtn {
+  background-color: var(--color-danger);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  height: 42px;
+}
+
+.closeBtn:hover {
+  background-color: var(--color-danger-hover);
+}
+
+.historyTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-top: 16px;
+}
+
+.tableContainer {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 700px;
+}
+
+.th {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.td {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 15px;
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.diffSurplus {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.diffDeficit {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.viewBtn {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.viewBtn:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* Modal details */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modalCloseBtn {
+  color: var(--color-text-muted);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.modalCloseBtn:hover {
+  background-color: var(--color-bg);
+}
+
+.modalBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.closeBtnAction {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.closeBtnAction:hover {
+  background-color: var(--color-primary-hover);
+}

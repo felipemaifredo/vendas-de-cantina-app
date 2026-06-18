@@ -1,0 +1,319 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.addButton {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  transition: background-color 0.2s;
+}
+
+.addButton:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.statusBadge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.activeBadge {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.inactiveBadge {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.productsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.productItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  background-color: var(--color-bg);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.productPrice {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  margin-top: auto;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.iconBtn:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.editBtn:hover {
+  color: var(--color-primary);
+}
+
+.deleteBtn:hover {
+  color: var(--color-danger);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.modalCloseBtn {
+  color: var(--color-text-muted);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.modalCloseBtn:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.modalForm {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 15px;
+  outline: none;
+  background-color: var(--color-surface);
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.productsSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--color-bg);
+}
+
+.productCheckItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.productCheckItem:hover {
+  background-color: var(--color-surface);
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+}
+
+.cancelBtn {
+  border: 1px solid var(--color-border);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.cancelBtn:hover {
+  background-color: var(--color-bg);
+}
+
+.submitBtn {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.submitBtn:hover {
+  background-color: var(--color-primary-hover);
+}
