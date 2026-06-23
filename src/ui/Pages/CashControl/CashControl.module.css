@@ -143,6 +143,11 @@
   background-color: var(--color-primary-hover);
 }
 
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .closeBtn {
   background-color: var(--color-danger);
   color: white;
@@ -154,6 +159,11 @@
 
 .closeBtn:hover {
   background-color: var(--color-danger-hover);
+}
+
+.closeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .historyTitle {

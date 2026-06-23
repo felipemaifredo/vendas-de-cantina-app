@@ -32,6 +32,7 @@ const Combos = () => {
   const [formName, setFormName] = useState<string>("")
   const [formItems, setFormItems] = useState<string[]>([])
   const [formActive, setFormActive] = useState<boolean>(true)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   useEffect(() => {
     loadData()
@@ -57,6 +58,7 @@ const Combos = () => {
     setFormName("")
     setFormItems([])
     setFormActive(true)
+    setIsSubmitting(false)
     setIsModalOpen(true)
   }
 
@@ -65,17 +67,20 @@ const Combos = () => {
     setFormName(combo.name)
     setFormItems(combo.items)
     setFormActive(combo.active)
+    setIsSubmitting(false)
     setIsModalOpen(true)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (isSubmitting) return
     if (!formName.trim()) return
     if (formItems.length === 0) {
       toast.warning("Por favor, selecione pelo menos um produto para o combo.")
       return
     }
 
+    setIsSubmitting(true)
     const comboId = editingCombo ? editingCombo.id : "combo_" + Date.now()
     const newCombo: Combo = {
       id: comboId,
@@ -92,6 +97,8 @@ const Combos = () => {
     } catch (err) {
       console.error("Erro ao salvar combo: ", err)
       toast.error("Erro ao salvar combo.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -305,11 +312,12 @@ const Combos = () => {
                   type="button"
                   className={styles.cancelBtn}
                   onClick={() => setIsModalOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className={styles.submitBtn}>
-                  {editingCombo ? "Salvar Alterações" : "Adicionar Combo"}
+                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                  {isSubmitting ? "Carregando..." : (editingCombo ? "Salvar Alterações" : "Adicionar Combo")}
                 </button>
               </div>
             </form>

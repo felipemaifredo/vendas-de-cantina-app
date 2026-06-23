@@ -31,11 +31,13 @@ const Sales = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false)
   const [amountPaid, setAmountPaid] = useState<string>("")
   const [paymentMethod, setPaymentMethod] = useState<"money" | "pix" | undefined>(undefined)
+  const [isSubmittingSale, setIsSubmittingSale] = useState<boolean>(false)
 
   useEffect(() => {
     if (!isCheckoutOpen) {
       setAmountPaid("")
       setPaymentMethod(undefined)
+      setIsSubmittingSale(false)
     }
   }, [isCheckoutOpen])
 
@@ -48,6 +50,7 @@ const Sales = () => {
   // Open Cash Register State (Quick actions from sales page)
   const [isCashOpenModalOpen, setIsCashOpenModalOpen] = useState<boolean>(false)
   const [initialCashValue, setInitialCashValue] = useState<string>("100.00")
+  const [isOpeningCash, setIsOpeningCash] = useState<boolean>(false)
 
   // Cart & Cash Context Hooks
   const { items, cartTotal, addToCart, addComboToCart, removeItem, decrementItem, clearCart, checkout } = useCart()
@@ -95,11 +98,13 @@ const Sales = () => {
 
   async function handleOpenCashSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (isOpeningCash) return
     const val = parseFloat(initialCashValue.replace(",", "."))
     if (isNaN(val) || val < 0) {
       toast.warning("Por favor, digite um valor inicial válido.")
       return
     }
+    setIsOpeningCash(true)
     try {
       await openSession(val)
       setIsCashOpenModalOpen(false)
@@ -107,10 +112,14 @@ const Sales = () => {
     } catch (err) {
       console.error(err)
       toast.error("Erro ao abrir o caixa.")
+    } finally {
+      setIsOpeningCash(false)
     }
   }
 
   async function handleConfirmCheckout() {
+    if (isSubmittingSale) return
+    setIsSubmittingSale(true)
     try {
       await checkout(paymentMethod)
       setIsCheckoutOpen(false)
@@ -119,6 +128,8 @@ const Sales = () => {
     } catch (err) {
       console.error(err)
       toast.error("Erro ao registrar a venda.")
+    } finally {
+      setIsSubmittingSale(false)
     }
   }
 
@@ -459,10 +470,9 @@ const Sales = () => {
                 <button
                   className={styles.modalConfirmBtn}
                   onClick={handleConfirmCheckout}
-                  disabled={!paymentMethod}
-                  style={!paymentMethod ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                  disabled={!paymentMethod || isSubmittingSale}
                 >
-                  Confirmar Venda
+                  {isSubmittingSale ? "Confirmando..." : "Confirmar Venda"}
                 </button>
               </div>
               <button className={styles.modalCancelBtn} onClick={handleCancelSale}>
@@ -491,14 +501,14 @@ const Sales = () => {
                 <div className={styles.formGroup}>
                   <label htmlFor="initial-cash" className={styles.label}>Valor Inicial (R$)</label>
                   <input
-                    id="initial-cash"
-                    type="number"
-                    step="any"
-                    inputMode="decimal"
-                    className={styles.input}
-                    value={initialCashValue}
-                    onChange={(e) => setInitialCashValue(e.target.value)}
-                    required
+                     id="initial-cash"
+                     type="number"
+                     step="any"
+                     inputMode="decimal"
+                     className={styles.input}
+                     value={initialCashValue}
+                     onChange={(e) => setInitialCashValue(e.target.value)}
+                     required
                   />
                 </div>
               </div>
@@ -508,11 +518,12 @@ const Sales = () => {
                     type="button"
                     className={styles.modalEditBtn}
                     onClick={() => setIsCashOpenModalOpen(false)}
+                    disabled={isOpeningCash}
                   >
                     Voltar
                   </button>
-                  <button type="submit" className={styles.modalConfirmBtn}>
-                    Abrir Caixa
+                  <button type="submit" className={styles.modalConfirmBtn} disabled={isOpeningCash}>
+                    {isOpeningCash ? "Abrindo..." : "Abrir Caixa"}
                   </button>
                 </div>
               </div>

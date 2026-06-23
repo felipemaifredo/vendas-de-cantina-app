@@ -36,6 +36,7 @@ const Products = () => {
   const [formCategory, setFormCategory] = useState<string>(CATEGORIES[0])
   const [formPrice, setFormPrice] = useState<string>("")
   const [formActive, setFormActive] = useState<boolean>(true)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   useEffect(() => {
     loadData()
@@ -60,6 +61,7 @@ const Products = () => {
     setFormCategory(CATEGORIES[0])
     setFormPrice("")
     setFormActive(true)
+    setIsSubmitting(false)
     setIsModalOpen(true)
   }
 
@@ -69,11 +71,13 @@ const Products = () => {
     setFormCategory(prod.category)
     setFormPrice(prod.price.toString())
     setFormActive(prod.active)
+    setIsSubmitting(false)
     setIsModalOpen(true)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (isSubmitting) return
     if (!formName.trim() || !formPrice) return
 
     const priceNum = parseFloat(formPrice.replace(",", "."))
@@ -82,6 +86,7 @@ const Products = () => {
       return
     }
 
+    setIsSubmitting(true)
     const prodId = editingProduct ? editingProduct.id : "prod_" + Date.now()
     const newProduct: Product = {
       id: prodId,
@@ -99,6 +104,8 @@ const Products = () => {
     } catch (err) {
       console.error("Erro ao salvar produto: ", err)
       toast.error("Ocorreu um erro ao salvar o produto.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -279,11 +286,12 @@ const Products = () => {
                   type="button"
                   className={styles.cancelBtn}
                   onClick={() => setIsModalOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className={styles.submitBtn}>
-                  {editingProduct ? "Salvar Alterações" : "Adicionar"}
+                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                  {isSubmitting ? "Carregando..." : (editingProduct ? "Salvar Alterações" : "Adicionar")}
                 </button>
               </div>
             </form>

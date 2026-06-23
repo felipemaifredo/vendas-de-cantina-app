@@ -317,3 +317,8 @@
 .submitBtn:hover {
   background-color: var(--color-primary-hover);
 }
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

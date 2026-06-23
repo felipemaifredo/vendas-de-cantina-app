@@ -41,6 +41,8 @@ const CashControl = () => {
   // Form values
   const [openVal, setOpenVal] = useState<string>("100.00")
   const [closeVal, setCloseVal] = useState<string>("")
+  const [isOpening, setIsOpening] = useState<boolean>(false)
+  const [isClosing, setIsClosing] = useState<boolean>(false)
 
   // Detail modal state
   const [selectedSession, setSelectedSession] = useState<CashSession | null>(null)
@@ -77,34 +79,42 @@ const CashControl = () => {
 
   async function handleOpen(e: React.FormEvent) {
     e.preventDefault()
+    if (isOpening) return
     const val = parseFloat(openVal.replace(",", "."))
     if (isNaN(val) || val < 0) {
       toast.warning("Valor inicial inválido.")
       return
     }
+    setIsOpening(true)
     try {
       await openSession(val)
       setOpenVal("100.00")
       toast.success("Caixa aberto com sucesso!")
     } catch (err) {
       toast.error("Erro ao abrir caixa.")
+    } finally {
+      setIsOpening(false)
     }
   }
 
   async function handleClose(e: React.FormEvent) {
     e.preventDefault()
+    if (isClosing) return
     if (!closeVal) return
     const val = parseFloat(closeVal.replace(",", "."))
     if (isNaN(val) || val < 0) {
       toast.warning("Valor final inválido.")
       return
     }
+    setIsClosing(true)
     try {
       await closeSession(val)
       setCloseVal("")
       toast.success("Caixa fechado com sucesso!")
     } catch (err) {
       toast.error("Erro ao fechar caixa.")
+    } finally {
+      setIsClosing(false)
     }
   }
 
@@ -310,8 +320,8 @@ const CashControl = () => {
                     required
                   />
                 </div>
-                <button type="submit" className={styles.closeBtn}>
-                  Fechar Caixa
+                <button type="submit" className={styles.closeBtn} disabled={isClosing}>
+                  {isClosing ? "Fechando..." : "Fechar Caixa"}
                 </button>
               </div>
             </form>
@@ -335,8 +345,8 @@ const CashControl = () => {
                   required
                 />
               </div>
-              <button type="submit" className={styles.submitBtn}>
-                Abrir Caixa
+              <button type="submit" className={styles.submitBtn} disabled={isOpening}>
+                {isOpening ? "Abrindo..." : "Abrir Caixa"}
               </button>
             </form>
           </div>
